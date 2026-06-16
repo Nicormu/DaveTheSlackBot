@@ -19,7 +19,7 @@ app.command("/dave-callcenter", async ({ ack, respond }) => {
 ⏱️ */dave-study [minutes]* - Forces you to actually do your work.
 🐈 */dave-catsecrets* - Useless but adorable cat facts.
 🤡 */dave-clown* - Jokes that will make you groan.
-🎱 */dave-8ballvision [question]* - Ask a calculator for life advice.
+🎱 */dave-8ball [question]* - Ask a calculator for life advice.
 ✂️ */dave-rps [rock/paper/scissors]* - Fight me.
 🚿 */dave-showerthought* - Things to keep you awake at 3 AM.`
   });
