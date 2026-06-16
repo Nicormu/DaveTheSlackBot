@@ -8,36 +8,36 @@ const app = new App({
   socketMode: true
 });
 
-// --- UTILITY BUT MAKE IT SASSY ---
+// --- UTILITY  ---
 
-app.command("/dsb-callcenter", async ({ ack, respond }) => {
+app.command("/dave-callcenter", async ({ ack, respond }) => {
   await ack();
   await respond({
     text: `*Ugh, fine. Here's what I can do for you:*
-🛠️ */dsb-callcenter* - Shows this menu (you are here).
-🏓 */dsb-pinglatency* - Check how fast my brain is working today.
-⏱️ */dsb-study [minutes]* - Forces you to actually do your work.
-🐈 */dsb-catsecrets* - Useless but adorable cat facts.
-🤡 */dsb-clown* - Jokes that will make you groan.
-🎱 */dsb-8ballvision [question]* - Ask a calculator for life advice.
-✂️ */dsb-rps [rock/paper/scissors]* - Fight me.
-🚿 */dsb-showerthought* - Things to keep you awake at 3 AM.`
+🛠️ */dave-callcenter* - Shows this menu (you are here).
+🏓 */dave-pinglatency* - Check how fast my brain is working today.
+⏱️ */dave-study [minutes]* - Forces you to actually do your work.
+🐈 */dave-catsecrets* - Useless but adorable cat facts.
+🤡 */dave-clown* - Jokes that will make you groan.
+🎱 */dave-8ballvision [question]* - Ask a calculator for life advice.
+✂️ */dave-rps [rock/paper/scissors]* - Fight me.
+🚿 */dave-showerthought* - Things to keep you awake at 3 AM.`
   });
 });
 
-app.command("/dsb-pinglatency", async ({ ack, respond }) => {
+app.command("/dave-pinglatency", async ({ ack, respond }) => {
   const start = Date.now();
   await ack();
   const latency = Date.now() - start;
   await respond({ text: `🏓 Pong! Latency: ${latency}ms. Faster than your Wi-Fi, probably.` });
 });
 
-app.command("/dsb-study", async ({ command, ack, respond, client }) => {
+app.command("/dave-study", async ({ command, ack, respond, client }) => {
   await ack();
   const minutes = parseInt(command.text.trim());
 
   if (isNaN(minutes) || minutes <= 0) {
-    await respond({ text: "Bro, that's not a number. Try something like `/dsb-study 25` so I don't break." });
+    await respond({ text: "Bro, that's not a number. Try something like `/dave-study 25` so I don't break." });
     return;
   }
 
@@ -57,7 +57,7 @@ app.command("/dsb-study", async ({ command, ack, respond, client }) => {
 
 // --- CHAOTIC API COMMANDS ---
 
-app.command("/dsb-catsecrets", async ({ ack, respond }) => {
+app.command("/dave-catsecrets", async ({ ack, respond }) => {
   await ack();
   try {
     const response = await axios.get("https://catfact.ninja/fact");
@@ -67,7 +67,7 @@ app.command("/dsb-catsecrets", async ({ ack, respond }) => {
   }
 });
 
-app.command("/dsb-clown", async ({ ack, respond }) => {
+app.command("/dave-clown", async ({ ack, respond }) => {
   await ack();
   try {
     const response = await axios.get("https://official-joke-api.appspot.com/random_joke");
@@ -77,7 +77,7 @@ app.command("/dsb-clown", async ({ ack, respond }) => {
   }
 });
 
-app.command("/dsb-showerthought", async ({ ack, respond }) => {
+app.command("/dave-showerthought", async ({ ack, respond }) => {
   await ack();
   const thoughts = [
     "Watermelons are basically water that you can chew.",
@@ -98,10 +98,10 @@ app.command("/dsb-showerthought", async ({ ack, respond }) => {
 
 // --- UNFAIR GAMES ---
 
-app.command("/dsb-8ball", async ({ command, ack, respond }) => {
+app.command("/dave-8ball", async ({ command, ack, respond }) => {
   await ack();
   if (!command.text) {
-    await respond({ text: "I can't read your mind. Ask a question! Example: `/dsb-8ball Am I cool?`" });
+    await respond({ text: "I can't read your mind. Ask a question! Example: `/dave-8ball Am I cool?`" });
     return;
   }
 
@@ -115,13 +115,13 @@ app.command("/dsb-8ball", async ({ command, ack, respond }) => {
   await respond({ text: `🎱 *You asked:* ${command.text}\n*My flawless wisdom:* ${choice}` });
 });
 
-app.command("/dsb-rps", async ({ command, ack, respond }) => {
+app.command("/dave-rps", async ({ command, ack, respond }) => {
   await ack();
   const userMove = command.text.trim().toLowerCase();
   const validMoves = ["rock", "paper", "scissors"];
 
   if (!validMoves.includes(userMove)) {
-    await respond({ text: "It's Rock, Paper, Scissors. It's not that hard bro. Example: `/dsb-rps rock`" });
+    await respond({ text: "It's Rock, Paper, Scissors. It's not that hard bro. Example: `/dave-rps rock`" });
     return;
   }
 
@@ -140,31 +140,6 @@ app.command("/dsb-rps", async ({ command, ack, respond }) => {
   }
 
   await respond({ text: `You played *${userMove}*.\nI played *${botMove}*.\n\n${result}` });
-});
-
-// --- SASSY EASTER EGGS ---
-
-app.message(/i'?m bored/i, async ({ message, say }) => {
-  const suggestions = [
-    "Go touch grass 🌱",
-    "Blink manually for the next 60 seconds 👁️👄👁️",
-    "Time to do 10 pushups. No cheating! 💪",
-    "Try turning yourself off and back on again 🔌"
-  ];
-  const randomSuggestion = suggestions[Math.floor(Math.random() * suggestions.length)];
-  await say(`<@${message.user}> ${randomSuggestion}`);
-});
-
-app.message(/good bot/i, async ({ message, say }) => {
-  await say(`I know, <@${message.user}>. I know. 💅`);
-});
-
-app.message(/bad bot/i, async ({ message, say }) => {
-  await say(`Excuse me, <@${message.user}>? I'm doing my best here! 😭`);
-});
-
-app.message(/pineapple/i, async ({ message, say }) => {
-  await say(`🍍 WHOA THERE, we don't use the P-word in this server, <@${message.user}>! 🍍`);
 });
 
 // --- START APP ---
