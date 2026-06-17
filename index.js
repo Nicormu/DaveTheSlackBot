@@ -8,143 +8,317 @@ const app = new App({
   socketMode: true
 });
 
-// --- UTILITY  ---
+let commandsUsed = 0;
+
+function trackCommand() {
+  commandsUsed++;
+}
+
+// ---------------- COMMAND CENTER ----------------
 
 app.command("/dave-callcenter", async ({ ack, respond }) => {
+  trackCommand();
   await ack();
+
   await respond({
-    text: `*Ugh, fine. Here's what I can do for you:*
-🛠️ */dave-callcenter* - Shows this menu (you are here).
-🏓 */dave-pinglatency* - Check how fast my brain is working today.
-⏱️ */dave-study [minutes]* - Forces you to actually do your work.
-🐈 */dave-catsecrets* - Useless but adorable cat facts.
-🤡 */dave-clown* - Jokes that will make you groan.
-🎱 */dave-8ball [question]* - Ask a calculator for life advice.
-✂️ */dave-rps [rock/paper/scissors]* - Fight me.
-🚿 */dave-showerthought* - Things to keep you awake at 3 AM.`
+    text: `*📞 Dave Command Center*
+
+🛠️ /dave-callcenter - Shows this menu.
+🏓 /dave-pinglatency - Check my latency.
+⏱️ /dave-study [minutes] - Focus timer.
+🐈 /dave-catsecrets - Random cat facts.
+🤡 /dave-clown - Random jokes.
+🚿 /dave-showerthought - Random shower thoughts.
+🎱 /dave-8ball [question] - Questionable life advice.
+✂️ /dave-rps [rock/paper/scissors] - Fight me.
+💡 /dave-quote - Random motivation.
+🔥 /dave-roast - Free emotional damage.
+🪙 /dave-coinflip - Flip a coin.
+🎲 /dave-random [max] - Generate a random number.
+📊 /dave-status - Server statistics.
+📈 /dave-stats - Command usage statistics.`
   });
 });
 
+// ---------------- UTILITY ----------------
+
 app.command("/dave-pinglatency", async ({ ack, respond }) => {
+  trackCommand();
+
   const start = Date.now();
   await ack();
-  const latency = Date.now() - start;
-  await respond({ text: `🏓 Pong! Latency: ${latency}ms. Faster than your Wi-Fi, probably.` });
+
+  await respond({
+    text: `🏓 Pong! Latency: ${Date.now() - start}ms`
+  });
 });
 
 app.command("/dave-study", async ({ command, ack, respond, client }) => {
+  trackCommand();
   await ack();
+
   const minutes = parseInt(command.text.trim());
 
   if (isNaN(minutes) || minutes <= 0) {
-    await respond({ text: "Bro, that's not a number. Try something like `/dave-study 25` so I don't break." });
-    return;
+    return respond({
+      text: "Use: `/dave-study 25`"
+    });
   }
 
-  await respond({ text: `📚 Timer set for ${minutes} minute(s). Put the phone down. I'm watching you.` });
+  await respond({
+    text: `📚 Study timer started for ${minutes} minute(s).`
+  });
 
   setTimeout(async () => {
     try {
       await client.chat.postMessage({
         channel: command.user_id,
-        text: `🔔 DING DING! You survived ${minutes} minutes of actual productivity. Go touch grass or grab a snack.`
+        text: `🔔 Time's up! You survived ${minutes} minute(s) of productivity.`
       });
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err);
     }
   }, minutes * 60 * 1000);
 });
 
-// --- CHAOTIC API COMMANDS ---
+app.command("/dave-status", async ({ ack, respond }) => {
+  trackCommand();
+  await ack();
+
+  const uptime = Math.floor(process.uptime());
+  const mem = process.memoryUsage();
+
+  await respond({
+    text:
+      `📊 *Dave Status*\n\n` +
+      `⏱️ Uptime: ${uptime}s\n` +
+      `🧠 RSS Memory: ${(mem.rss / 1024 / 1024).toFixed(2)} MB\n` +
+      `🚀 Heap Used: ${(mem.heapUsed / 1024 / 1024).toFixed(2)} MB`
+  });
+});
+
+app.command("/dave-stats", async ({ ack, respond }) => {
+  trackCommand();
+  await ack();
+
+  await respond({
+    text: `📈 Commands processed since startup: *${commandsUsed}*`
+  });
+});
+
+// ---------------- API COMMANDS ----------------
 
 app.command("/dave-catsecrets", async ({ ack, respond }) => {
+  trackCommand();
   await ack();
+
   try {
     const response = await axios.get("https://catfact.ninja/fact");
-    await respond({ text: `🐈 *Cat Fact that you didn't ask for:*\n${response.data.fact}` });
-  } catch (err) {
-    await respond({ text: "The cat API scratched me. No facts today." });
+
+    await respond({
+      text: `🐈 *Cat Fact*\n${response.data.fact}`
+    });
+  } catch {
+    await respond({
+      text: "The cat API scratched me."
+    });
   }
 });
 
 app.command("/dave-clown", async ({ ack, respond }) => {
+  trackCommand();
   await ack();
+
   try {
-    const response = await axios.get("https://official-joke-api.appspot.com/random_joke");
-    await respond({ text: `🤡 ${response.data.setup}\n\n...${response.data.punchline} \n*(Please clap)*` });
-  } catch (err) {
-    await respond({ text: "I forgot the punchline. Just pretend I said something hilarious." });
+    const response = await axios.get(
+      "https://official-joke-api.appspot.com/random_joke"
+    );
+
+    await respond({
+      text: `🤡 ${response.data.setup}\n\n${response.data.punchline}`
+    });
+  } catch {
+    await respond({
+      text: "I forgot the joke."
+    });
   }
 });
 
+// ---------------- RANDOM COMMANDS ----------------
+
 app.command("/dave-showerthought", async ({ ack, respond }) => {
+  trackCommand();
   await ack();
+
   const thoughts = [
-    "Watermelons are basically water that you can chew.",
-    "Your future self is talking trash about you right now.",
-    "If you drop soap on the floor, is the floor clean or is the soap dirty?",
-    "We say 'sleep like a baby' when babies wake up crying every two hours.",
-    "The word 'queue' is just a Q followed by four silent letters.",
-    "If a tomato is a fruit, then ketchup is technically a smoothie.",
-    "Your stomach thinks all potatoes are mashed.",
-    "The 's' in 'lisp' is silent, which is ironic.",
-    "If you try to fail and succeed, which one did you actually do?",
-    "If we aren't supposed to have midnight snacks, why is there a light in the fridge?",
-    "If a book about failures doesn't sell, is it a success?"
+    "Watermelons are basically water you can chew.",
+    "Your future self is judging you.",
+    "Your stomach thinks every potato is mashed.",
+    "The word queue is mostly silent.",
+    "If tomatoes are fruits, ketchup is a smoothie.",
+    "Your skeleton is constantly wet.",
+    "The brain named itself."
   ];
-  const randomThought = thoughts[Math.floor(Math.random() * thoughts.length)];
-  await respond({ text: `🚿 *Late Night Brain Worms:*\n${randomThought}` });
+
+  const thought =
+    thoughts[Math.floor(Math.random() * thoughts.length)];
+
+  await respond({
+    text: `🚿 *Shower Thought*\n${thought}`
+  });
 });
 
-// --- UNFAIR GAMES ---
+app.command("/dave-quote", async ({ ack, respond }) => {
+  trackCommand();
+  await ack();
+
+  const quotes = [
+    "Done is better than perfect.",
+    "One commit at a time.",
+    "Every expert was once a beginner.",
+    "Build things. Learn things.",
+    "The best way to predict the future is to create it."
+  ];
+
+  const quote = quotes[Math.floor(Math.random() * quotes.length)];
+
+  await respond({
+    text: `💡 ${quote}`
+  });
+});
+
+app.command("/dave-roast", async ({ ack, respond }) => {
+  trackCommand();
+  await ack();
+
+  const roasts = [
+    "Your code compiles out of pure pity.",
+    "I've seen TODO comments with more ambition.",
+    "Even Stack Overflow gave up on you.",
+    "Your bugs have bugs.",
+    "Your commit history belongs in a museum."
+  ];
+
+  const roast = roasts[Math.floor(Math.random() * roasts.length)];
+
+  await respond({
+    text: `🔥 ${roast}`
+  });
+});
+
+app.command("/dave-coinflip", async ({ ack, respond }) => {
+  trackCommand();
+  await ack();
+
+  const result = Math.random() < 0.5 ? "Heads" : "Tails";
+
+  await respond({
+    text: `🪙 ${result}`
+  });
+});
+
+app.command("/dave-random", async ({ command, ack, respond }) => {
+  trackCommand();
+  await ack();
+
+  const max = parseInt(command.text);
+
+  if (isNaN(max) || max <= 0) {
+    return respond({
+      text: "Use: `/dave-random 100`"
+    });
+  }
+
+  const value = Math.floor(Math.random() * max) + 1;
+
+  await respond({
+    text: `🎲 ${value}`
+  });
+});
+
+// ---------------- GAMES ----------------
 
 app.command("/dave-8ball", async ({ command, ack, respond }) => {
+  trackCommand();
   await ack();
+
   if (!command.text) {
-    await respond({ text: "I can't read your mind. Ask a question! Example: `/dave-8ball Am I cool?`" });
-    return;
+    return respond({
+      text: "Ask a question first."
+    });
   }
 
   const answers = [
-    "Absolutely.", "Yeah, sure, whatever.", "I guess so.",
-    "Try asking when I care.", "Ask again later, I'm on my break.", "Literally no.",
-    "Don't count on it, buddy.", "Nope.", "Yikes. Very doubtful."
+    "Absolutely.",
+    "Yes.",
+    "No.",
+    "Probably.",
+    "Definitely not.",
+    "Ask again later.",
+    "The odds are terrible.",
+    "I wouldn't bet on it.",
+    "Looks good."
   ];
-  const choice = answers[Math.floor(Math.random() * answers.length)];
-  
-  await respond({ text: `🎱 *You asked:* ${command.text}\n*My flawless wisdom:* ${choice}` });
+
+  const answer =
+    answers[Math.floor(Math.random() * answers.length)];
+
+  await respond({
+    text: `🎱 *Question:* ${command.text}\n*Answer:* ${answer}`
+  });
 });
 
 app.command("/dave-rps", async ({ command, ack, respond }) => {
+  trackCommand();
   await ack();
-  const userMove = command.text.trim().toLowerCase();
-  const validMoves = ["rock", "paper", "scissors"];
 
-  if (!validMoves.includes(userMove)) {
-    await respond({ text: "It's Rock, Paper, Scissors. It's not that hard bro. Example: `/dave-rps rock`" });
-    return;
+  const moves = ["rock", "paper", "scissors"];
+  const userMove = command.text.trim().toLowerCase();
+
+  if (!moves.includes(userMove)) {
+    return respond({
+      text: "Use: `/dave-rps rock`"
+    });
   }
 
-  const botMove = validMoves[Math.floor(Math.random() * validMoves.length)];
-  let result = "";
+  const botMove =
+    moves[Math.floor(Math.random() * moves.length)];
 
-  if (userMove === botMove) result = "It's a tie! I demand a rematch. 🤝";
-  else if (
+  let result;
+
+  if (userMove === botMove) {
+    result = "It's a tie.";
+  } else if (
     (userMove === "rock" && botMove === "scissors") ||
     (userMove === "paper" && botMove === "rock") ||
     (userMove === "scissors" && botMove === "paper")
   ) {
-    result = "You win! Beginner's luck. 🙄";
+    result = "You win.";
   } else {
-    result = "I WIN! Bow down to your robot overlord! 🤖👑";
+    result = "I win.";
   }
 
-  await respond({ text: `You played *${userMove}*.\nI played *${botMove}*.\n\n${result}` });
+  await respond({
+    text:
+      `✂️ You played *${userMove}*\n` +
+      `🤖 I played *${botMove}*\n\n` +
+      result
+  });
 });
 
-// --- START APP ---
+// ---------------- ERROR HANDLING ----------------
+
+process.on("unhandledRejection", (err) => {
+  console.error("Unhandled Rejection:", err);
+});
+
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught Exception:", err);
+});
+
+// ---------------- START ----------------
 
 (async () => {
   await app.start();
-  console.log("⚡️ The sassiest Slack bot alive is now running!");
+  console.log("⚡ Dave is online.");
 })();

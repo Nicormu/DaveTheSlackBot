@@ -13,16 +13,22 @@ Dave lives on a Nest server and runs 24/7, helping users stay productive, answer
 | `/dave-callcenter`      | Displays the command menu.                              |
 | `/dave-pinglatency`     | Checks bot response latency.                            |
 | `/dave-study <minutes>` | Starts a study timer and sends a reminder when it ends. |
+| `/dave-status`          | Shows uptime and memory usage.                          |
+| `/dave-stats`           | Displays how many commands Dave has processed.          |
 
 ### Fun Commands
 
-| Command                  | Description                       |            |                                          |
-| ------------------------ | --------------------------------- | ---------- | ---------------------------------------- |
-| `/dave-catsecrets`       | Random cat facts.                 |            |                                          |
-| `/dave-clown`            | Random jokes.                     |            |                                          |
-| `/dave-showerthought`    | Random shower thoughts.           |            |                                          |
-| `/dave-8ball <question>` | Receive questionable life advice. |            |                                          |
-| `/dave-rps <rock         | paper                             | scissors>` | Challenge Dave to Rock, Paper, Scissors. |
+| Command                           | Description                              |
+| --------------------------------- | ---------------------------------------- |
+| `/dave-catsecrets`                | Random cat facts.                        |
+| `/dave-clown`                     | Random jokes.                            |
+| `/dave-showerthought`             | Random shower thoughts.                  |
+| `/dave-8ball <question>`          | Receive questionable life advice.        |
+| `/dave-rps <rock/paper/scissors>` | Challenge Dave to Rock, Paper, Scissors. |
+| `/dave-quote`                     | Random motivational quote.               |
+| `/dave-roast`                     | Dave insults you for free.               |
+| `/dave-coinflip`                  | Flip a coin.                             |
+| `/dave-random <max>`              | Generate a random number.                |
 
 ## Tech Stack
 
@@ -53,7 +59,7 @@ SLACK_BOT_TOKEN=your_bot_token
 SLACK_APP_TOKEN=your_app_token
 ```
 
-## Running
+## Running Locally
 
 ```bash
 node index.js
@@ -65,21 +71,41 @@ or
 npm start
 ```
 
-## Deployment
+## Deploying on Nest
 
-Dave is designed to run continuously on a Nest server.
+Create a user service:
 
-Recommended production setup:
+```ini
+[Unit]
+Description=Dave Slack Bot
+After=network.target
 
-```bash
-npm install -g pm2
+[Service]
+WorkingDirectory=/home/dave/Dave
+ExecStart=/usr/bin/node index.js
+Restart=always
+RestartSec=5
+Environment=NODE_ENV=production
 
-pm2 start index.js --name dave
-pm2 save
-pm2 startup
+[Install]
+WantedBy=default.target
 ```
 
-This ensures Dave automatically restarts after crashes or server reboots.
+Enable and start the service:
+
+```bash
+systemctl --user daemon-reload
+systemctl --user enable dave.service
+systemctl --user start dave.service
+```
+
+Useful commands:
+
+```bash
+systemctl --user restart dave.service
+systemctl --user status dave.service
+journalctl --user -u dave.service -f
+```
 
 ## Environment Variables
 
@@ -95,6 +121,15 @@ This ensures Dave automatically restarts after crashes or server reboots.
 * Use the minimum permissions required.
 * Rotate credentials if they are exposed.
 
+## Roadmap
+
+* Persistent statistics storage
+* User leaderboards
+* Daily productivity challenges
+* Poll and voting commands
+* AI-powered responses
+* Better Slack Block Kit UI
+
 ## License
 
 MIT License
@@ -102,5 +137,5 @@ MIT License
 ---
 
 *"The sassiest Slack bot alive is now running!"*
-*Dave*
-*😎*
+
+— Dave 😎
