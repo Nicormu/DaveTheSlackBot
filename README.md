@@ -18,17 +18,29 @@ Dave lives on a Nest server and runs 24/7, helping users stay productive, answer
 
 ### Fun Commands
 
-| Command                           | Description                              |
-| --------------------------------- | ---------------------------------------- |
-| `/dave-catsecrets`                | Random cat facts.                        |
-| `/dave-clown`                     | Random jokes.                            |
-| `/dave-showerthought`             | Random shower thoughts.                  |
-| `/dave-8ball <question>`          | Receive questionable life advice.        |
-| `/dave-rps <rock/paper/scissors>` | Challenge Dave to Rock, Paper, Scissors. |
-| `/dave-quote`                     | Random motivational quote.               |
-| `/dave-roast`                     | Dave insults you for free.               |
-| `/dave-coinflip`                  | Flip a coin.                             |
-| `/dave-random <max>`              | Generate a random number.                |
+| Command                           | Description                                             |
+| --------------------------------- | ------------------------------------------------------- |
+| `/dave-catsecrets`                | Random cat facts.                                       |
+| `/dave-clown`                     | Random jokes.                                           |
+| `/dave-showerthought`             | Random shower thoughts.                                 |
+| `/dave-8ball <question>`          | Receive questionable life advice.                       |
+| `/dave-rps <rock/paper/scissors>` | Challenge Dave to Rock, Paper, Scissors.                |
+| `/dave-quote`                     | Random motivational quote.                              |
+| `/dave-roast`                     | Dave insults you for free.                              |
+| `/dave-coinflip`                  | Flip a coin.                                            |
+| `/dave-random <max>`              | Generate a random number.                               |
+
+### Personality Commands
+
+| Command                           | Description                                             |
+| --------------------------------- | ------------------------------------------------------- |
+| `/dave-mood`                      | See how Dave is feeling (spoiler: not great).           |
+| `/dave-advice`                    | Receive terrible life advice.                           |
+| `/dave-compliment`                | You deserve nice things sometimes.                      |
+| `/dave-fortune`                   | Fortune cookie wisdom for developers.                   |
+| `/dave-debater <statement>`       | Dave will argue with whatever you say.                  |
+| `/dave-decide <question>`         | Let Dave make your decisions for you.                   |
+| `/dave-existential`               | Deep thoughts from a very shallow bot.                  |
 
 ## Tech Stack
 
@@ -73,7 +85,9 @@ npm start
 
 ## Deploying on Nest
 
-Create a user service:
+### Initial Setup
+
+Create the service file at `~/.config/systemd/user/dave.service`:
 
 ```ini
 [Unit]
@@ -81,30 +95,51 @@ Description=Dave Slack Bot
 After=network.target
 
 [Service]
-WorkingDirectory=/home/dave/Dave
+WorkingDirectory=/home/nicor/Documents/Nicor/Stardance/DaveTheSlackBot
 ExecStart=/usr/bin/node index.js
 Restart=always
 RestartSec=5
 Environment=NODE_ENV=production
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=dave
 
 [Install]
 WantedBy=default.target
 ```
 
-Enable and start the service:
+Enable and start:
 
 ```bash
 systemctl --user daemon-reload
-systemctl --user enable dave.service
-systemctl --user start dave.service
+systemctl --user enable --now dave.service
+systemctl --user status dave.service
 ```
 
-Useful commands:
+### Updating the Bot on Nest
+
+After making changes locally, push to your repo and SSH into Nest:
 
 ```bash
-systemctl --user restart dave.service
-systemctl --user status dave.service
-journalctl --user -u dave.service -f
+# On Nest — pull latest and restart
+cd ~/Documents/Nicor/Stardance/DaveTheSlackBot
+git pull
+npm install           # if dependencies changed
+systemctl --user restart dave.service   # restart the bot
+systemctl --user status dave.service    # verify it's running
+```
+
+Quick check: run `/dave-pinglatency` in Slack to confirm Dave is responding.
+
+### Useful Commands
+
+```bash
+systemctl --user restart dave.service    # restart the bot
+systemctl --user reload-or-restart dave.service  # zero-downtime-ish restart
+systemctl --user status dave.service     # check if it's running
+journalctl --user -u dave.service -f     # live logs
+journalctl --user -u dave.service -n 50  # last 50 lines
+systemctl --user stop dave.service       # take it offline
 ```
 
 ## Environment Variables
